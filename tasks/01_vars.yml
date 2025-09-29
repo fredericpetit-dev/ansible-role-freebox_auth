@@ -1,0 +1,30 @@
+- name: "==================== 😎 VARIABLES : Définitions préalables. ===================="
+  ansible.builtin.meta: noop
+
+- name: "[VARIABLES] :: DÉFINITION => 'freebox_auth_vault.data.revision'"
+  ansible.builtin.set_fact:
+    freebox_auth_vault: "{{ freebox_auth_vault | set_nested('data.revision', lookup('pipe', 'date +%Y-%m-%dT%H%M%S')) }}"
+
+- name: "[VARIABLES] :: DÉFINITION => 'freebox_auth_vault.password'"
+  ansible.builtin.set_fact:
+    freebox_auth_vault: >-
+      {{ freebox_auth_vault
+        | set_nested(
+            'password',
+            (VAULT_PASSWORD_PROMPT
+              | default(VAULT_PASSWORD_CMD, true))
+              | default(false, true)
+          )
+      }}
+  no_log: true
+
+- name: "[VARIABLES] :: |!| ÉCHEC EXPLICITE si aucun mot de passe n'est renseigné"
+  ansible.builtin.fail:
+    msg: "Un mot de passe Ansible Vault est requis"
+  when:
+    - freebox_auth_vault.password == ''
+
+- name: "[VARIABLES] :: Vérifier si le fichier existe"
+  ansible.builtin.stat:
+    path: "{{ freebox_auth_vault.path }}"
+  register: var_check_file_vault

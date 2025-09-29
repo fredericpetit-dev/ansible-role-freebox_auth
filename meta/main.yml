@@ -1,0 +1,28 @@
+# SPDX-License-Identifier: MIT-0
+---
+# meta file for freebox_auth
+
+galaxy_info:
+  author: "Frédéric Petit"
+  description: "Ansible role for getting a Freebox API Token."
+  company: "fredericpetit"
+  license: "MIT"
+  min_ansible_version: "2.18.0"
+  platforms:
+    - name: Debian
+      versions:
+        - all
+    - name: Ubuntu
+      versions:
+        - all
+    - name: Alpine
+      version:
+        - all
+    - name: Fedora
+      versions:
+        - all
+  galaxy_tags:
+    - free
+    - box
+    - freebox
+dependencies: []

@@ -1,0 +1,53 @@
+---
+- name: "==================== 😎 URL : Définition de 'freebox_auth_api.url.access'. ===================="
+  ansible.builtin.meta: noop
+
+- name: "[URL] :: Obtention de l'URL de base de l'API Freebox"
+  ansible.builtin.uri:
+    url: "{{ freebox_auth_api.url.base }}"
+    method: GET
+    validate_certs: false
+    return_content: true
+  register: var_get_config_api
+
+- name: "[URL] :: Stocker la configuration de l'API dans 'freebox_auth_api.config'"
+  ansible.builtin.set_fact:
+    freebox_auth_api: "{{ freebox_auth_api | set_nested('config', var_get_config_api.json) }}"
+
+- name: "[URL] :: |!| ÉCHEC EXPLICITE si des clés attendues dans la réponse ne sont pas lisibles"
+  ansible.builtin.fail:
+    msg: "Clé manquante ou invalide dans 'freebox_auth_api.config'"
+  when: item is not defined or item is none
+  loop:
+    - "{{ freebox_auth_api.config.api_base_url }}"
+    - "{{ freebox_auth_api.config.api_domain }}"
+    - "{{ freebox_auth_api.config.https_port }}"
+    - "{{ freebox_auth_api.config.api_version }}"
+    - "{{ freebox_auth_api.config.device_name }}"
+    - "{{ freebox_auth_api.config.device_type }}"
+    - "{{ freebox_auth_api.config.box_model_name }}"
+    - "{{ freebox_auth_api.config.box_model }}"
+    - "{{ freebox_auth_api.config.https_available }}"
+    - "{{ freebox_auth_api.config.uid }}"
+
+- name: "[URL] :: Affichage complet de 'freebox_auth_api.config'"
+  ansible.builtin.debug:
+    var: freebox_auth_api.config
+
+- name: "[URL] :: Définition effective de la variable 'freebox_auth_api.url.access'"
+  ansible.builtin.set_fact:
+    freebox_auth_api: >-
+      {{ freebox_auth_api | set_nested(
+          'url.access',
+          'https://'
+          ~ freebox_auth_api.config.api_domain
+          ~ ':'
+          ~ (freebox_auth_api.config.https_port | string)
+          ~ (freebox_auth_api.config.api_base_url | regex_replace('/$', ''))
+          ~ '/v'
+          ~ freebox_auth_api.version
+      ) }}
+
+- name: "[URL] :: CONTRÔLE => Affichage des URL de base et d'accès"
+  ansible.builtin.debug:
+    var: freebox_auth_api.url

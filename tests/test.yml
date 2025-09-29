@@ -1,0 +1,7 @@
+# SPDX-License-Identifier: MIT-0
+---
+- name: "Test du rôle freebox_auth sur localhost"
+  hosts: localhost
+  remote_user: root
+  roles:
+    - freebox_auth

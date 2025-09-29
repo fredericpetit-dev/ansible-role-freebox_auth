@@ -1,0 +1,53 @@
+---
+- name: "==================== 😎 APP : Enregistrement d'une application. ===================="
+  ansible.builtin.meta: noop
+
+- name: "[APP] :: Enregistrement de l'application"
+  ansible.builtin.uri:
+    url: "{{ freebox_auth_api.url.access }}/login/authorize/"
+    method: POST
+    validate_certs: false
+    headers:
+      Content-Type: application/json
+    body_format: json
+    body:
+      app_id: "{{ freebox_auth_app.id }}"
+      app_name: "{{ freebox_auth_app.name }}"
+      app_version: "{{ freebox_auth_app.version }}"
+      device_name: "{{ freebox_auth_app.device }}"
+      permissions:
+        settings: true
+        vm: true
+        dhcp: true
+  register: var_get_app_register
+
+- name: "[APP] :: ÉCHEC EXPLICITE pour absence de 'track_id'"
+  ansible.builtin.fail:
+    msg: "|!| ÉCHEC EXPLICITE :: L'API Freebox n'a pas renvoyé de 'track_id'."
+  when: var_get_app_register.json.result.track_id is not defined
+
+- name: "[APP] :: DÉFINITION => 'freebox_auth_vault.data'"
+  ansible.builtin.set_fact:
+    freebox_auth_vault: "{{ freebox_auth_vault
+      | set_nested('data.id', freebox_auth_app.id)
+      | set_nested('data.track', var_get_app_register.json.result.track_id)
+      | set_nested('data.token', var_get_app_register.json.result.app_token)
+    }}"
+
+- name: "[APP] :: Validation manuelle sur la box"
+  ansible.builtin.uri:
+    url: "{{ freebox_auth_api.url.access }}/login/authorize/{{ freebox_auth_vault.data.track }}"
+    method: GET
+    validate_certs: false
+  register: var_get_app_status
+  until: var_get_app_status.json.result.status == "granted"
+  retries: 20
+  delay: 2
+
+- name: "[APP] :: ÉCHEC EXPLICITE pour application désactivée"
+  ansible.builtin.fail:
+    msg: >-
+      |!| ÉCHEC EXPLICITE :: Activation impossible de l'application
+      '{{ freebox_auth_app.name }}', statut final :
+      '{{ var_get_app_status.json.result.status }}'.
+  when: var_get_app_status.json.result.status != "granted"

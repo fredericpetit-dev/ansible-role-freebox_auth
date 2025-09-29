@@ -1,0 +1,232 @@
+---
+- name: "[VAULT] :: BLOCK AUTH ABSENTE : fichier Ansible Vault inexistant → définition simple"
+  when: not var_check_file_vault.stat.exists | default(false)
+  block:
+    - name: "[VAULT] :: DÉFINITION => 'freebox_auth_work.legacy.auth.check'"
+      ansible.builtin.set_fact:
+        freebox_auth_work: "{{ freebox_auth_work | set_nested('freebox_auth_work.legacy.auth.check', (var_check_file_vault.stat.exists | default(false))) }}"
+
+- name: "[VAULT] :: BLOCK AUTH EXISTE : fichier Ansible Vault existant → test des clés puis test de validité du token"
+  when: var_check_file_vault.stat.exists | default(false)
+  block:
+    - name: "[VAULT] :: Lire contenu du fichier Vault"
+      ansible.builtin.shell: |
+        ansible-vault view --vault-password-file=<(echo "{{ freebox_auth_vault.password }}") "{{ freebox_auth_vault.path }}"
+      args:
+        executable: /bin/bash
+      register: var_vault_view
+      changed_when: false
+
+    - name: "[VAULT] :: DÉFINITION => 'freebox_auth_work.legacy.auth.check'"
+      ansible.builtin.set_fact:
+        freebox_auth_work: >-
+          {{ freebox_auth_work
+            | set_nested(
+                'legacy.auth.check',
+                (
+                  (
+                    var_vault_view.stdout
+                    | from_yaml
+                    | dict2items
+                    | selectattr('key', 'in', ['id', 'revision', 'track', 'token'])
+                    | map(attribute='value')
+                    | list
+                    | length == 4
+                  ) | default(false)
+                )
+              )
+          }}
+      no_log: true
+
+    - name: "[VAULT] :: Lire le contenu déchiffré du fichier Ansible Vault"
+      ansible.builtin.command: >
+        bash -c 'ansible-vault view --vault-password-file=<(echo "{{ freebox_auth_vault.password }}") "{{ freebox_auth_vault.path }}"'
+      register: var_get_vault_content
+      changed_when: false
+      no_log: true
+      when:
+        - freebox_auth_work.legacy.auth.check | bool
+
+    - name: "[VAULT] :: Charger toutes les clés dans 'freebox_auth_vault.data' depuis le fichier Ansible Vault"
+      ansible.builtin.set_fact:
+        freebox_auth_vault: >-
+          {{ freebox_auth_vault
+            | set_nested('data.id',
+                (var_get_vault_content.stdout | from_yaml).id | default(''))
+            | set_nested('data.track',
+                (var_get_vault_content.stdout | from_yaml).track | default(''))
+            | set_nested('data.token',
+                (var_get_vault_content.stdout | from_yaml).token | default(''))
+          }}
+        var_get_vault_content_revision: >-
+          {{ (var_get_vault_content.stdout | from_yaml).revision | default(lookup('pipe', 'date +%Y-%m-%dT%H%M%S')) }}
+      no_log: true
+      when:
+        - freebox_auth_work.legacy.auth.check | bool
+
+    - name: "[VAULT] :: Annonce du test du token existant"
+      ansible.builtin.debug:
+        msg: "Un token d'authentification existant et datant du '{{ var_get_vault_content_revision }}' va être testé ..."
+      when:
+        - freebox_auth_work.legacy.auth.check | bool
+
+    - name: "[AUTH] :: Obtention du challenge 'var_session_challenge' pour démarrer une session"
+      ansible.builtin.uri:
+        url: "{{ freebox_auth_api.url.access }}/login/"
+        method: GET
+        validate_certs: false
+      register: var_session_challenge
+      no_log: true
+      when:
+        - freebox_auth_work.legacy.auth.check | bool
+
+    - name: "[AUTH] :: CONTRÔLE => Affichage du challenge 'var_session_challenge' pour démarrer une session"
+      ansible.builtin.debug:
+        var: var_session_challenge.json.result.challenge
+      no_log: true
+      when:
+        - freebox_auth_work.legacy.auth.check | bool
+
+    - name: "[AUTH] :: Calcul du mot de passe de session 'var_session_password' (HMAC SHA1 via openssl CLI)"
+      ansible.builtin.command: >
+        bash -c "printf '{{ var_session_challenge.json.result.challenge }}' | openssl dgst -sha1 -hmac '{{ freebox_auth_vault.data.token }}' | cut -d' ' -f2"
+      register: var_session_password
+      changed_when: false
+      no_log: true
+      when:
+        - freebox_auth_work.legacy.auth.check | bool
+
+    - name: "[AUTH] :: CONTRÔLE => Affichage du mot de passe de session 'var_session_password'"
+      ansible.builtin.debug:
+        var: var_session_password.stdout
+      no_log: true
+      when:
+        - freebox_auth_work.legacy.auth.check | bool
+
+    - name: "[AUTH] :: Obtention d'un Token de session 'var_session_token' pour démarrer une session"
+      ansible.builtin.uri:
+        url: "{{ freebox_auth_api.url.access }}/login/session/"
+        method: POST
+        validate_certs: false
+        headers:
+          Content-Type: application/json
+        body_format: json
+        body:
+          app_id: "{{ freebox_auth_vault.data.id }}"
+          password: "{{ var_session_password.stdout }}"
+      register: var_session_token
+      no_log: true
+      when:
+        - freebox_auth_work.legacy.auth.check | bool
+
+    - name: "[VAULT] :: SUCCÈS"
+      ansible.builtin.debug:
+        msg: "Jeton de session validé avec succès"
+      when:
+        - var_session_token.json.success | bool
+
+    - name: "[VAULT] :: REDÉFINITION => 'freebox_auth_work.legacy.auth.check'"
+      ansible.builtin.set_fact:
+        freebox_auth_work: "{{ freebox_auth_work | set_nested('legacy.auth.check', false) }}"
+      when:
+        - not var_session_token.json.success
+
+- name: "[VAULT] :: BLOCK CHOIX POST TEST"
+  block:
+    - name: "[VAULT] :: |!| ÉCHEC EXPLICITE"
+      ansible.builtin.fail:
+        msg: "Une authentification fonctionnelle existe déjà mais la réécriture n'est pas souhaitée (cas n°2.1)"
+      when:
+        - var_check_file_vault.stat.exists
+        - freebox_auth_work.legacy.auth.check | bool
+        - not freebox_auth_work.legacy.auth.overwrite | bool
+
+    - name: "[VAULT] :: |!| ÉCHEC EXPLICITE"
+      ansible.builtin.fail:
+        msg: "Le jeton de session est invalide et la réécriture n'est pas souhaitée (cas n°2.2)"
+      when:
+        - var_check_file_vault.stat.exists
+        - not freebox_auth_work.legacy.auth.check | bool
+        - not freebox_auth_work.legacy.auth.overwrite | bool
+
+    - name: "[VAULT] :: SUCCÈS"
+      ansible.builtin.debug:
+        msg: "Un nouveau jeton de session va remplacer l'ancien jeton nécessitant une ré-écriture (cas n°1.1)"
+      when:
+        - var_check_file_vault.stat.exists
+        - freebox_auth_work.legacy.auth.check | bool
+        - freebox_auth_work.legacy.auth.overwrite | bool
+
+    - name: "[VAULT] :: SUCCÈS"
+      ansible.builtin.debug:
+        msg: "Un nouveau jeton de session va être remplacer l'ancien jeton défectueux (cas n°1.2)"
+      when:
+        - var_check_file_vault.stat.exists
+        - not freebox_auth_work.legacy.auth.check | bool
+        - freebox_auth_work.legacy.auth.overwrite | bool
+
+    - name: "[VAULT] :: SUCCÈS"
+      ansible.builtin.debug:
+        msg: "Un jeton de session va être créer (cas n°3)"
+      when:
+        - not var_check_file_vault.stat.exists
+
+- name: "[VAULT] :: BLOCK CRÉATION"
+  block:
+    - name: "[VAULT] :: Supprimer le fichier Ansible Vault (nettoyage)"
+      ansible.builtin.file:
+        path: "{{ freebox_auth_vault.path }}"
+        state: absent
+
+    - name: "[VAULT] :: REDÉFINITION => 'freebox_auth_work.legacy.auth.check'"
+      ansible.builtin.set_fact:
+        freebox_auth_work: "{{ freebox_auth_work | set_nested('legacy.auth.check', false) }}"
+
+    - name: "[VAULT] :: Réinitialiser 'freebox_auth_vault.data'"
+      ansible.builtin.set_fact:
+        freebox_auth_vault: >-
+          {{ freebox_auth_vault
+            | set_nested('data.id', '')
+            | set_nested('data.track', '')
+            | set_nested('data.token', '')
+          }}
+
+    - name: "[VAULT] :: Créer un nouveau fichier Ansible Vault et son dossier parent si nécessaire"
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        state: "{{ item.state }}"
+        mode: "{{ item.mode | default(omit) }}"
+        owner: >-
+          {{
+            freebox_auth_vault.uid
+              | default(lookup('env', 'USER'))
+              if freebox_auth_vault.uid | default('') | length > 0
+              else lookup('env', 'USER')
+          }}
+        group: >-
+          {{
+            freebox_auth_vault.gid
+              | default(lookup('pipe', 'id -gn'))
+              if freebox_auth_vault.gid | default('') | length > 0
+              else lookup('pipe', 'id -gn')
+          }}
+      loop:
+        - { path: "{{ freebox_auth_vault.path | dirname }}", state: "directory", mode: "0700" }
+        - { path: "{{ freebox_auth_vault.path }}", state: "touch", mode: "0600" }
+
+    - name: "[VAULT] :: Créer un vrai fichier Vault sans fichier intermédiaire"
+      ansible.builtin.shell: |
+        bash -c '
+        set -o pipefail
+        {
+          echo "id: {{ freebox_auth_vault.data.id | default('') }}"
+          echo "revision: {{ freebox_auth_vault.data.revision | default('') }}"
+          echo "track: {{ freebox_auth_vault.data.track | default('') }}"
+          echo "token: {{ freebox_auth_vault.data.token | default('') }}"
+        } | ansible-vault encrypt --vault-password-file=<(echo "{{ freebox_auth_vault.password }}") > "{{ freebox_auth_vault.path }}.enc"
+        mv "{{ freebox_auth_vault.path }}.enc" "{{ freebox_auth_vault.path }}"
+        '
+      args:
+        executable: /bin/bash
+      changed_when: false
+      no_log: true

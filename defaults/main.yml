@@ -1,0 +1,38 @@
+# SPDX-License-Identifier: MIT-0
+---
+# defaults file for freebox_auth
+
+# WORK - Tests divers.
+# freebox_auth_work.legacy.auth.overwrite (À ADAPTER) - Par défaut, false : une authentification existante sera conservée.
+freebox_auth_work:
+  legacy:
+    auth:
+      check: null
+      overwrite: false
+
+# APP (ADAPTER CE QUI N'EST PAS VIDE) - Application qui permet d'interroger l'API Freebox OS.
+freebox_auth_app:
+  id: "fr.freebox.freebox-auth"
+  name: "Freebox Auth"
+  version: "1.0"
+  device: "Ansible"
+
+# VAULT (ADAPTER CE QUI N'EST PAS VIDE, ET/OU L'UID/GID D'UN COMPTE SYSTÈME À UTILISER) - Autres paramètres définis pendant l'exécution du rôle.
+freebox_auth_vault:
+  path: "/home/ansible/.ansible/vault/freebox/auth.yml"
+  password: ""
+  uid: ""
+  gid: ""
+  data:
+    id: ""
+    revision: ""
+    track: ""
+    token: ""
+
+# API - URL d'accès et configuration seront complétées dans le premier playbook.
+freebox_auth_api:
+  url:
+    base: "http://mafreebox.freebox.fr/api_version"
+    access: ""
+  version: "4"
+  config: ""

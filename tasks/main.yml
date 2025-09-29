@@ -1,0 +1,18 @@
+# SPDX-License-Identifier: MIT-0
+---
+# tasks file for freebox_auth
+
+- name: 01 - Définitions préalables.
+  ansible.builtin.import_tasks: 01_vars.yml
+
+- name: 02 - Définition de 'freebox_auth_api.url.access'.
+  ansible.builtin.import_tasks: 02_url.yml
+
+- name: 03 - Tests pour soit réécrire ou créer un nouveau fichier Ansible Vault sécurisé.
+  ansible.builtin.import_tasks: 03_vault.yml
+
+- name: 04 - Enregistrement d'une application.
+  ansible.builtin.import_tasks: 04_app.yml
+
+- name: 05 - Sauvegarde sécurisée d'un token d'accès général.
+  ansible.builtin.import_tasks: 05_token.yml

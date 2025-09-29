@@ -1,0 +1,25 @@
+---
+- name: "==================== 😎 TOKEN : Sauvegarde sécurisée d'un token d'accès général. ===================="
+  ansible.builtin.meta: noop
+
+- name: "[VAULT] :: Créer un vrai fichier Vault sans fichier intermédiaire"
+  ansible.builtin.shell: |
+    bash -c '
+    set -o pipefail
+    {
+      echo "id: {{ freebox_auth_vault.data.id | default('') }}"
+      echo "revision: {{ freebox_auth_vault.data.revision | default('') }}"
+      echo "track: {{ freebox_auth_vault.data.track | default('') }}"
+      echo "token: {{ freebox_auth_vault.data.token | default('') }}"
+    } | ansible-vault encrypt --vault-password-file=<(echo "{{ freebox_auth_vault.password }}") > "{{ freebox_auth_vault.path }}.enc"
+    mv "{{ freebox_auth_vault.path }}.enc" "{{ freebox_auth_vault.path }}"
+    '
+  args:
+    executable: /bin/bash
+  changed_when: false
+  no_log: true
+
+- name: "[TOKEN] :: Vérifier les données d'authentification chargées"
+  ansible.builtin.debug:
+    var: freebox_auth_vault.data
+  no_log: true
