@@ -4,7 +4,7 @@
 
 [🇬🇧] Ansible role for getting a Freebox API Token.
 
-![logo](.gitlab/assets/img/logo_300.png)
+![logo](https://gitlab.com/fredericpetit/ansible-role-freebox-auth/-/raw/main/.gitlab/assets/img/logo_300.png)
 
 ## I) Synopsis.
 
@@ -72,7 +72,7 @@ Roles can be listed with `ansible-galaxy role list`.
 
 ### Ansible Vault file result.
 
-![vault](.gitlab/assets/img/vault.png)
+![vault](https://gitlab.com/fredericpetit/ansible-role-freebox-auth/-/raw/main/.gitlab/assets/img/vault.png)
 
 ## V) Usage.
 
@@ -156,7 +156,7 @@ The access URL and configuration will be populated in the first playbook.
 
 ## IX) Beautiful code.
 
-![lint](.gitlab/assets/img/lint.png)
+![lint](https://gitlab.com/fredericpetit/ansible-role-freebox-auth/-/raw/main/.gitlab/assets/img/lint.png)
 
 [🇲🇫] Vous pouvez vérfier la validité pleine et entière des bonnes pratiques du code contenu dans ce rôle avec la commande `ansible-lint roles/fredericpetitdev.freebox_auth/`.
 
