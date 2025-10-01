@@ -1,6 +1,6 @@
 namespace: fredericpetitdev
 name: freebox_auth
-version: 0.0.3
+version: 0.0.5
 readme: README.md
 authors:
   - "Frédéric Petit <contact@fredericpetit.fr>"

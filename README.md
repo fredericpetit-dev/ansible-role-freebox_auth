@@ -12,7 +12,7 @@
 
 1. Une variable `VAULT_PASSWORD` est requise lors du lancement du rôle, à renseigner soit dans la CLI de lancement ou manuellement quand le prompt le demandera.
 1. Selon plusieurs scénarios possibles, réalisation de tests pour savoir si une ancienne authentification existe et quoi faire selon le choix de réécriture.
-1. Enregistrement d'une application dans Freebox OS.
+1. Enregistrement d'une application dans Freebox OS, avec validation manuelle à effectuer sur la box.
 1. Obtention d'un token d'accès général stocké de manière sécurisée dans un fichier Ansible Vault.
 
 ### Scénarios.
@@ -26,7 +26,7 @@
 
 1. A `VAULT_PASSWORD` variable is required when launching the role, either provided through the CLI or entered manually when prompted.
 1. Depending on some possible scenarios, tests are performed to determine whether a previous authentication exists and what action to take based on the overwrite choice.
-1. Application registration in Freebox OS.
+1. Application registration in Freebox OS, with manual validation to be performed on the box.
 1. Retrieval of a general access token securely stored in an Ansible Vault file.
 
 ### Scenarios.
@@ -53,7 +53,14 @@ To add in the _requirements.yml_ file (root of ansible folder for example) :
 
 ```yaml
 - src: fredericpetitdev.freebox_auth
-  version: 0.0.2
+  version: 0.0.5
+```
+
+for latest version :
+
+```yaml
+- src: fredericpetitdev.freebox_auth
+  version: latest
 ```
 
 Then run : `ansible-galaxy role install -r requirements.yml --force`.
