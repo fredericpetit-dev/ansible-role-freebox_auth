@@ -3,10 +3,10 @@ name: freebox_auth
 version: 0.0.2
 readme: README.md
 authors:
-  - "Frédéric Petit @fredericpetit"
+  - "Frédéric Petit <contact@fredericpetit.fr>"
 description: "Ansible role for getting a Freebox API Token."
-repository: "https://gitlab.com/fredericpetit/ansible-role-freebox-auth"
-documentation: "https://gitlab.com/fredericpetit/ansible-role-freebox-auth"
+repository: "https://github.com/fredericpetit-dev/ansible-role-freebox-auth"
+documentation: "https://github.com/fredericpetit-dev/ansible-role-freebox-auth"
 license:
   - MIT
 dependencies: {}
@@ -20,6 +20,5 @@ tags:
 build_ignore:
   - ".gitlab/"
   - ".github/"
-  - "assets/"
   - "tests/"
   - ".gitignore"
