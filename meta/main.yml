@@ -3,11 +3,13 @@
 # meta file for freebox_auth
 
 galaxy_info:
+  namespace: fredericpetit
+  role_name: freebox_auth
   author: "Frédéric Petit"
   description: "Ansible role for getting a Freebox API Token."
   company: "fredericpetit"
   license: "MIT"
-  min_ansible_version: "2.18.0"
+  min_ansible_version: "2.15.0"
   platforms:
     - name: Debian
       versions:
@@ -16,7 +18,7 @@ galaxy_info:
       versions:
         - all
     - name: Alpine
-      version:
+      versions:
         - all
     - name: Fedora
       versions:

@@ -1,6 +1,6 @@
 namespace: fredericpetit
 name: freebox_auth
-version: 0.0.1
+version: 0.0.2
 readme: README.md
 authors:
   - "Frédéric Petit @fredericpetit"
@@ -17,3 +17,9 @@ tags:
   - auth
   - token
   - security
+build_ignore:
+  - ".gitlab/"
+  - ".github/"
+  - "assets/"
+  - "tests/"
+  - ".gitignore"

@@ -2,4 +2,4 @@
 ---
 # runtime file for freebox_auth
 
-requires_ansible: ">=2.18.0"
+requires_ansible: ">=2.15.0"
