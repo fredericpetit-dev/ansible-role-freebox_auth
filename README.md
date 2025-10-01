@@ -52,7 +52,7 @@
 To add in the _requirements.yml_ file (root of ansible folder for example) :
 
 ```yaml
-- src: fredericpetit.freebox_auth
+- src: fredericpetit-dev.freebox_auth
   version: 0.0.2
 ```
 
@@ -63,7 +63,7 @@ Then run : `ansible-galaxy role install -r requirements.yml --force`.
 ```yaml
 - src: git+https://gitlab.com/fredericpetit/ansible-role-freebox-auth.git
   version: main
-  name: fredericpetit.freebox_auth
+  name: fredericpetit-dev.freebox_auth
 ```
 
 Roles can be listed with `ansible-galaxy role list`.
@@ -103,10 +103,8 @@ Add the role in a playbook, like this (_auth.yml_ file for example):
         token: ""
 
   roles:
-    - fredericpetit.freebox_auth
+    - fredericpetit-dev.freebox_auth
 ```
-
-NOTE : replace `fredericpetit.freebox_auth` by `freebox_auth` if role is installed by GIT.
 
 Then run : `ansible-playbook -i inventory playbooks/freebox/auth.yml`
 
@@ -154,12 +152,12 @@ The access URL and configuration will be populated in the first playbook.
 
 ## VIII) Uninstall.
 
-- `ansible-galaxy remove fredericpetit.freebox_auth`
+- `ansible-galaxy remove fredericpetit-dev.freebox_auth`
 
 ## IX) Beautiful code.
 
 ![lint](.gitlab/assets/img/lint.png)
 
-[🇲🇫] Vous pouvez vérfier la validité pleine et entière des bonnes pratiques du code contenu dans ce rôle avec la commande `ansible-lint roles/fredericpetit.freebox_auth/`.
+[🇲🇫] Vous pouvez vérfier la validité pleine et entière des bonnes pratiques du code contenu dans ce rôle avec la commande `ansible-lint roles/fredericpetit-dev.freebox_auth/`.
 
-[🇬🇧] You can verify the compliance with best practices of the code contained in this role using the command `ansible-lint roles/fredericpetit.freebox_auth/`.
+[🇬🇧] You can verify the compliance with best practices of the code contained in this role using the command `ansible-lint roles/fredericpetit-dev.freebox_auth/`.

@@ -4,4 +4,4 @@
   hosts: localhost
   remote_user: root
   roles:
-    - freebox_auth
+    - fredericpetit-dev.freebox_auth
