@@ -56,13 +56,6 @@ To add in the _requirements.yml_ file (root of ansible folder for example) :
   version: 0.0.5
 ```
 
-for latest version :
-
-```yaml
-- src: fredericpetitdev.freebox_auth
-  version: latest
-```
-
 Then run : `ansible-galaxy role install -r requirements.yml --force`.
 
 **OR**
