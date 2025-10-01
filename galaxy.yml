@@ -1,12 +1,12 @@
-namespace: fredericpetit-dev
+namespace: fredericpetitdev
 name: freebox_auth
-version: 0.0.2
+version: 0.0.3
 readme: README.md
 authors:
   - "Frédéric Petit <contact@fredericpetit.fr>"
 description: "Ansible role for getting a Freebox API Token."
-repository: "https://github.com/fredericpetit-dev/ansible-role-freebox-auth"
-documentation: "https://github.com/fredericpetit-dev/ansible-role-freebox-auth"
+repository: "https://github.com/fredericpetitdev/ansible-role-freebox-auth"
+documentation: "https://github.com/fredericpetitdev/ansible-role-freebox-auth"
 license:
   - MIT
 dependencies: {}

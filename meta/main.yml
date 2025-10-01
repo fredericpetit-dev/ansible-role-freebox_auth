@@ -3,11 +3,11 @@
 # meta file for freebox_auth
 
 galaxy_info:
-  namespace: fredericpetit-dev
+  namespace: fredericpetitdev
   role_name: freebox_auth
   author: "Frédéric Petit"
   description: "Ansible role for getting a Freebox API Token."
-  company: "fredericpetit-dev"
+  company: "fredericpetitdev"
   license: "MIT"
   min_ansible_version: "2.15.0"
   platforms:
